@@ -1,4 +1,4 @@
-# LabAPI--command
+# 秘密实验室聊天插件
 
 SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 [`shadow096-1/SL-Translate-CN`](https://github.com/shadow096-1/SL-Translate-CN/tree/3d711586584d7bfd11a5cc4b7afc54c28d4dc48a)
