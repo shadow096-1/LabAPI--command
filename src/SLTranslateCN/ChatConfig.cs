@@ -15,5 +15,15 @@ public sealed class ChatConfig
     public int HintFontSize { get; set; } = 28;
 
     public bool SendConsoleCopy { get; set; } = true;
+
+    public bool QqReportEnabled { get; set; } = false;
+
+    public string QqBotApiUrl { get; set; } = string.Empty;
+
+    public string QqBotAccessToken { get; set; } = string.Empty;
+
+    public long QqReportGroupId { get; set; }
+
+    public long QqReportAtQq { get; set; }
 }
 

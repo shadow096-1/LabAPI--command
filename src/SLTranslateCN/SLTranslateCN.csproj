@@ -6,7 +6,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>SLTranslateCN</AssemblyName>
     <RootNamespace>SLTranslateCN</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +21,7 @@
     <Reference Include="CommandSystem.Core" HintPath="$(SL_REFERENCES)/CommandSystem.Core.dll" Private="false" />
     <Reference Include="Mirror" HintPath="$(SL_REFERENCES)/Mirror.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(SL_REFERENCES)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <Target Name="ValidateServerReferences" BeforeTargets="ResolveReferences">

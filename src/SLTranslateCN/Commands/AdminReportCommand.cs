@@ -34,9 +34,9 @@ public sealed class AdminReportCommand : ICommand
             return false;
         }
 
-        int admins = ChatService.SendAdminReport(player, text);
-        response = admins > 0 ? "发送成功。" : "发送失败。";
-        return admins > 0;
+        bool accepted = ChatService.SendAdminReport(player, text);
+        response = accepted ? "发送成功。" : "发送失败。";
+        return accepted;
     }
 }
 

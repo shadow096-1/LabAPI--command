@@ -79,7 +79,7 @@ public static class ChatService
         return recipients;
     }
 
-    public static int SendAdminReport(Player sender, string text)
+    public static bool SendAdminReport(Player sender, string text)
     {
         string message = $"{AdminPrefix} {FormatSender(sender)}：{Sanitize(text)}";
         ushort duration = Plugin.Instance?.Config?.AdminReportBroadcastDuration ?? 10;
@@ -93,7 +93,12 @@ public static class ChatService
         }
 
         Logger.Warn($"[AdminReport] {Sanitize(sender.LogName)}: {Sanitize(text)}");
-        return admins.Count;
+        if (admins.Count != 0)
+        {
+            return true;
+        }
+
+        return ReportForwarder.TryForward(Plugin.Instance?.Config, sender, text);
     }
 
     public static string GetFactionName(Faction faction)

@@ -6,14 +6,14 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 
 ## 下载
 
-当前插件版本：**1.0.0**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
+当前插件版本：**1.1.0**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
 这是服务器端 LabAPI 插件，不是 LabAPI 框架本体。
 
 ## 命令
 
 - `.bc <内容>`：公屏聊天，发送给已就绪玩家。
 - `.c <内容>`：阵营聊天，仅发送给同阵营的已就绪玩家。
-- `.ac <内容>`：举报，仅发送给已就绪且有 Remote Admin 访问权限的玩家，并记录到服务器日志；无人在线时也记录日志，但回执为发送失败。
+- `.ac <内容>`：举报，仅发送给已就绪且有 Remote Admin 访问权限的玩家，并记录到服务器日志；无人在线时记录日志；配置 QQ 机器人后自动转发到群并艾特指定 QQ。
 
 消息包含发送者阵营、存活状态及角色。`.bc`、`.c` 仅显示左上方小字；`.ac` 保留顶部大字，同时显示左上方小字，仅管理员接收。三种消息默认均为 10 秒，不做永久显示；可配置客户端控制台纯文本副本。
 
@@ -63,11 +63,24 @@ admin_report_broadcast_duration: 10
 hint_vertical_offset: 500
 hint_font_size: 28
 send_console_copy: true
+qq_report_enabled: false
+qq_bot_api_url: "http://127.0.0.1:3000"
+qq_bot_access_token: ""
+qq_report_group_id: 0
+qq_report_at_qq: 0
 ```
 
 旧配置不必删除，新增字段使用默认值。`hint_vertical_offset` 为相对原提示基线向上的偏移（0–700），`hint_font_size` 为字号（16–40）；不同分辨率可适当微调。原有 `*_broadcast_duration` 配置名保留兼容，公屏和阵营的值现在控制小字时长。
 
 命令发送回执仅显示“发送成功。”或“发送失败。”，不显示接收人数。阵营标签使用“混沌”，不显示“敌对”。
+
+## QQ 机器人转发（可选）
+
+支持 OneBot 11 HTTP 接口（如 NapCat）。有管理员在线时，`.ac` 只在游戏内发送；没有在线管理时，若配置完整，插件异步向机器人 `POST /send_group_msg`，发送群消息并艾特 `qq_report_at_qq`。
+
+在服务器配置文件中设置 `qq_report_enabled: true`，并填入可由游戏服务器访问的机器人 **HTTP API 基础地址**（例如本机的 `http://127.0.0.1:3000`）、`qq_report_group_id`、`qq_report_at_qq`；机器人设置了 access token 才需填写 `qq_bot_access_token`。机器人 QQ 必须在目标群内。不要填写 WebSocket 或反向事件上报地址。重启服务器后生效。
+
+玩家看见“发送成功”表示举报已经交给异步转发流程，不代表 QQ 已确认投递。接口失败或机器人返回失败时，服务器日志会记录错误，但不会泄露 token 和举报正文；举报正文仍有常规举报日志。没有配置机器人时维持原行为，显示“发送失败”。为避免把玩家身份标识公开到群里，机器人只发送游戏内显示名、阵营、状态、角色和举报内容。
 
 ## 本次修正
 

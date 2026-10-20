@@ -84,6 +84,41 @@ admin.RemoteAdminAccess = false;
 Check(!commands[2].Execute(inputArgs, sender, out response) && response == "发送失败。" && Logger.Messages.Count == 1, "Reports are logged when no admin is online");
 
 ResetMessages();
+plugin.Config.QqReportEnabled = true;
+plugin.Config.QqBotApiUrl = "http://127.0.0.1:3000";
+plugin.Config.QqBotAccessToken = "test-secret";
+plugin.Config.QqReportGroupId = 123456789;
+plugin.Config.QqReportAtQq = 987654321;
+var forwarded = new List<(Uri Endpoint, string Token, string Body)>();
+ReportForwarder.SendRequestAsync = (endpoint, token, body) =>
+{
+    forwarded.Add((endpoint, token, body));
+    return Task.FromResult(true);
+};
+Check(commands[2].Execute(new ArraySegment<string>(new[] { "举报 \"引号\" \\ [CQ:at,qq=all]" }), sender, out response)
+    && response == "发送成功。", "Offline report is accepted by QQ bot");
+Check(forwarded.Count == 1 && forwarded[0].Endpoint.AbsoluteUri == "http://127.0.0.1:3000/send_group_msg"
+    && forwarded[0].Token == "test-secret", "Bot request uses configured API and token");
+using (var payload = System.Text.Json.JsonDocument.Parse(forwarded.Single().Body))
+{
+    var root = payload.RootElement;
+    Check(root.GetProperty("group_id").GetInt64() == 123456789 &&
+          root.GetProperty("message")[0].GetProperty("type").GetString() == "at" &&
+          root.GetProperty("message")[0].GetProperty("data").GetProperty("qq").GetString() == "987654321", "Bot sends group message with explicit mention");
+    Check(root.GetProperty("message")[1].GetProperty("data").GetProperty("text").GetString()!.Contains("[CQ:at,qq=all]"),
+        "User text stays inside plain text segment");
+}
+admin.RemoteAdminAccess = true;
+commands[2].Execute(inputArgs, sender, out response);
+Check(forwarded.Count == 1 && admin.Broadcasts.Count == 1, "Online admin prevents bot forwarding");
+admin.RemoteAdminAccess = false;
+plugin.Config.QqBotApiUrl = "file:///tmp/untrusted";
+Check(!commands[2].Execute(inputArgs, sender, out response) && response == "发送失败。" && forwarded.Count == 1,
+    "Invalid API URL is rejected without a request");
+plugin.Config.QqReportEnabled = false;
+ResetMessages();
+
+ResetMessages();
 plugin.Config.SendConsoleCopy = false;
 commands[0].Execute(inputArgs, sender, out _);
 Check(Player.ReadyList.All(p => p.ConsoleMessages.Count == 0), "Console copies can be disabled");
