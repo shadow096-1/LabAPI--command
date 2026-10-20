@@ -35,8 +35,8 @@ public sealed class FactionChatCommand : ICommand
         }
 
         int recipients = ChatService.SendFaction(player, text);
-        response = $"阵营消息已发送给 {recipients} 名同阵营玩家。";
-        return true;
+        response = recipients > 0 ? "发送成功。" : "发送失败。";
+        return recipients > 0;
     }
 }
 

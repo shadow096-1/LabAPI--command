@@ -57,7 +57,7 @@ Check(ChatService.JoinArguments(default) == "", "Default arguments are safe");
 plugin.Config.PublicBroadcastDuration = 4;
 sender.Nickname = "name\n[FakeLog]";
 var unsafeArgs = new ArraySegment<string>(new[] { "<size=999>hello</size>\n\u001b[31m" });
-Check(commands[0].Execute(unsafeArgs, sender, out string response) && response.Contains("4 秒"), "Public response uses configured duration");
+Check(commands[0].Execute(unsafeArgs, sender, out string response) && response == "发送成功。", "Public response is status only");
 Check(Player.ReadyList.Where(p => p.IsReady).All(p => p.Hints.Count == 1 && p.Hints[0].Duration == 4), "Public delivery uses configured duration");
 Check(Player.ReadyList.All(p => p.Broadcasts.Count == 0), "Public chat has no large broadcast");
 Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=500><size=28>"), "Small chat text is left aligned and moved up");
@@ -67,21 +67,21 @@ Check(sender.ConsoleMessages.Single().Contains("‹size=999›") && !sender.Cons
 
 ResetMessages();
 plugin.Config.FactionBroadcastDuration = 3;
-Check(commands[1].Execute(inputArgs, sender, out _), "Faction command succeeds");
+Check(commands[1].Execute(inputArgs, sender, out response) && response == "发送成功。", "Faction response is status only");
 Check(sender.Hints.Count == 1 && ally.Hints.Count == 1 && enemy.Hints.Count == 0 && admin.Hints.Count == 0, "Faction messages stay in sender faction");
 Check(ally.Hints[0].Duration == 3, "Faction duration is configurable");
 Check(Player.ReadyList.All(p => p.Broadcasts.Count == 0), "Faction chat has no large broadcast");
 
 ResetMessages();
 Check(plugin.Config.AdminReportBroadcastDuration == 10, "Reports default to ten seconds");
-Check(commands[2].Execute(inputArgs, sender, out response) && response.Contains("1 名"), "Reports count ready admins only");
+Check(commands[2].Execute(inputArgs, sender, out response) && response == "发送成功。", "Report response is status only");
 Check(admin.Broadcasts.Count == 1 && sender.Broadcasts.Count == 0 && ally.Broadcasts.Count == 0 && enemy.Broadcasts.Count == 0, "Reports reach only admins");
 Check(admin.Broadcasts[0].Duration == 10 && admin.Hints.Single().Duration == 10, "Both report displays last ten seconds");
 Check(admin.Hints.Single().Text.Contains(admin.Broadcasts.Single().Text), "Report retains large text and upper-left copy");
 Check(Player.ReadyList.Where(p => p != admin).All(p => p.Hints.Count == 0), "Report hints are admin-only");
 ResetMessages();
 admin.RemoteAdminAccess = false;
-Check(commands[2].Execute(inputArgs, sender, out response) && response.Contains("没有在线管理") && Logger.Messages.Count == 1, "Reports are logged when no admin is online");
+Check(!commands[2].Execute(inputArgs, sender, out response) && response == "发送失败。" && Logger.Messages.Count == 1, "Reports are logged when no admin is online");
 
 ResetMessages();
 plugin.Config.SendConsoleCopy = false;

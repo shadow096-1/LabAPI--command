@@ -101,7 +101,7 @@ public static class ChatService
         return faction switch
         {
             Faction.FoundationStaff => "基金会",
-            Faction.FoundationEnemy => "混沌/敌对",
+            Faction.FoundationEnemy => "混沌",
             Faction.SCP => "SCP",
             Faction.Unclassified => "未分类",
             _ => faction.ToString()

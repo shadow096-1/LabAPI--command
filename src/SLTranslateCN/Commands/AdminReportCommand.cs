@@ -35,10 +35,8 @@ public sealed class AdminReportCommand : ICommand
         }
 
         int admins = ChatService.SendAdminReport(player, text);
-        response = admins > 0
-            ? $"举报已私信给 {admins} 名在线管理。"
-            : "举报已记录到服务器日志，但当前没有在线管理。";
-        return true;
+        response = admins > 0 ? "发送成功。" : "发送失败。";
+        return admins > 0;
     }
 }
 

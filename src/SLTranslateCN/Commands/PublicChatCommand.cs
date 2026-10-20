@@ -35,7 +35,7 @@ public sealed class PublicChatCommand : ICommand
         }
 
         ChatService.SendPublic(player, text);
-        response = $"公屏消息已发送（显示 {Plugin.Instance!.Config!.PublicBroadcastDuration} 秒）。";
+        response = "发送成功。";
         return true;
     }
 }
