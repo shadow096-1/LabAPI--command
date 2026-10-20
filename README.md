@@ -6,7 +6,7 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 
 ## 下载
 
-当前插件版本：**1.0.4**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
+当前插件版本：**1.0.0**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
 这是服务器端 LabAPI 插件，不是 LabAPI 框架本体。
 
 ## 命令
