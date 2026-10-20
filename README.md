@@ -6,7 +6,7 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 
 ## 下载
 
-当前插件版本：**1.0.2**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
+当前插件版本：**1.0.3**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
 这是服务器端 LabAPI 插件，不是 LabAPI 框架本体。
 
 ## 命令
@@ -15,7 +15,7 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 - `.c <内容>`：阵营聊天，仅发送给同阵营的已就绪玩家。
 - `.ac <内容>`：举报，仅发送给已就绪且有 Remote Admin 访问权限的玩家，并记录到服务器日志；无人在线时也记录日志。
 
-消息包含发送者阵营、存活状态及角色。画面广播和提示同时显示，默认 10 秒；可配置客户端控制台纯文本副本。
+消息包含发送者阵营、存活状态及角色。`.bc`、`.c` 仅显示左上方小字；`.ac` 保留顶部大字，同时显示左上方小字，仅管理员接收。三种消息默认均为 10 秒，不做永久显示；可配置客户端控制台纯文本副本。
 
 ## 构建
 
@@ -60,10 +60,16 @@ is_enabled: true
 public_broadcast_duration: 10
 faction_broadcast_duration: 10
 admin_report_broadcast_duration: 10
+hint_vertical_offset: 500
+hint_font_size: 28
 send_console_copy: true
 ```
 
+旧配置不必删除，新增字段使用默认值。`hint_vertical_offset` 为相对原提示基线向上的偏移（0–700），`hint_font_size` 为字号（16–40）；不同分辨率可适当微调。原有 `*_broadcast_duration` 配置名保留兼容，公屏和阵营的值现在控制小字时长。
+
 ## 本次修正
+
+- 顶部大字仅用于 `.ac`；小字改为左对齐并上移，举报保持默认 10 秒。
 
 - 补齐游戏程序集引用及缺失依赖提示，增加 .NET Framework 4.8 参考程序集包。
 - 插件未加载、配置未加载或已禁用时拒绝聊天命令。

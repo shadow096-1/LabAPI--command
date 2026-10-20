@@ -89,7 +89,7 @@ public static class ChatService
 
         foreach (Player admin in admins)
         {
-            SendPlayerMessage(admin, message, duration, "red");
+            SendPlayerMessage(admin, message, duration, "red", showBroadcast: true);
         }
 
         Logger.Warn($"[AdminReport] {Sanitize(sender.LogName)}: {Sanitize(text)}");
@@ -133,10 +133,17 @@ public static class ChatService
         };
     }
 
-    private static void SendPlayerMessage(Player player, string message, ushort duration, string consoleColor = "cyan")
+    private static void SendPlayerMessage(Player player, string message, ushort duration, string consoleColor = "cyan", bool showBroadcast = false)
     {
-        player.SendBroadcast(message, duration, shouldClearPrevious: false);
-        player.SendHint(message, duration);
+        if (showBroadcast)
+        {
+            player.SendBroadcast(message, duration, shouldClearPrevious: false);
+        }
+
+        ChatConfig? config = Plugin.Instance?.Config;
+        int offset = Math.Max(0, Math.Min(700, config?.HintVerticalOffset ?? 500));
+        int size = Math.Max(16, Math.Min(40, config?.HintFontSize ?? 28));
+        player.SendHint($"<align=left><voffset={offset}><size={size}>{message}</size></voffset></align>", duration);
 
         if (Plugin.Instance?.Config?.SendConsoleCopy ?? true)
         {
