@@ -1,5 +1,8 @@
 using System;
 using LabApi.Features;
+using LabApi.Events.Arguments.PlayerEvents;
+using LabApi.Events.Handlers;
+using LabApi.Features.Wrappers;
 using LabPlugin = LabApi.Loader.Features.Plugins.Plugin<SLTranslateCN.ChatConfig>;
 
 namespace SLTranslateCN;
@@ -23,11 +26,38 @@ public sealed class Plugin : LabPlugin
     public override void Enable()
     {
         Instance = this;
+        PlayerEvents.ReportedPlayer += OnReportedPlayer;
+        PlayerEvents.ReportedCheater += OnReportedCheater;
     }
 
     public override void Disable()
     {
+        PlayerEvents.ReportedPlayer -= OnReportedPlayer;
+        PlayerEvents.ReportedCheater -= OnReportedCheater;
         Instance = null;
+    }
+
+    private static void OnReportedPlayer(PlayerReportedPlayerEventArgs ev)
+    {
+        ForwardNativeReport(ev.Player, ev.Target, ev.Reason, "玩家举报");
+    }
+
+    private static void OnReportedCheater(PlayerReportedCheaterEventArgs ev)
+    {
+        ForwardNativeReport(ev.Player, ev.Target, ev.Reason, "作弊举报");
+    }
+
+    private static void ForwardNativeReport(Player reporter, Player target, string reason, string kind)
+    {
+        if (!ChatService.IsEnabled ||
+            System.Linq.Enumerable.Any(Player.ReadyList, player => player.IsReady && player.RemoteAdminAccess))
+        {
+            return;
+        }
+
+        string targetName = ChatService.Sanitize(target?.DisplayName ?? target?.Nickname ?? "未知玩家");
+        string content = $"{kind}：{targetName}；原因：{reason}";
+        ReportForwarder.TryForward(Instance?.Config, reporter, content);
     }
 }
 

@@ -76,7 +76,7 @@ qq_report_at_qq: 0
 
 ## QQ 机器人转发（可选）
 
-支持 OneBot 11 HTTP 接口（如 NapCat）。有管理员在线时，`.ac` 只在游戏内发送；没有在线管理时，若配置完整，插件异步向机器人 `POST /send_group_msg`，发送群消息并艾特 `qq_report_at_qq`。
+支持 OneBot 11 HTTP 接口（如 NapCat）。有管理员在线时，`.ac` 只在游戏内发送；没有在线管理时，若配置完整，`.ac` 和玩家列表内置的“举报玩家”及“举报作弊”都会异步向机器人 `POST /send_group_msg`，发送群消息并艾特 `qq_report_at_qq`。内置举报消息带上被举报玩家的显示名和举报原因。
 
 在服务器配置文件中设置 `qq_report_enabled: true`，并填入可由游戏服务器访问的机器人 **HTTP API 基础地址**（例如本机的 `http://127.0.0.1:3000`）、`qq_report_group_id`、`qq_report_at_qq`；机器人设置了 access token 才需填写 `qq_bot_access_token`。机器人 QQ 必须在目标群内。不要填写 WebSocket 或反向事件上报地址。重启服务器后生效。
 

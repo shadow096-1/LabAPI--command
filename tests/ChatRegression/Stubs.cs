@@ -89,3 +89,33 @@ namespace LabApi.Features.Wrappers
         public void SendConsoleMessage(string text, string color) => ConsoleMessages.Add(text);
     }
 }
+
+namespace LabApi.Events.Arguments.PlayerEvents
+{
+    public sealed class PlayerReportedPlayerEventArgs(LabApi.Features.Wrappers.Player player, LabApi.Features.Wrappers.Player target, string reason)
+    {
+        public LabApi.Features.Wrappers.Player Player { get; } = player;
+        public LabApi.Features.Wrappers.Player Target { get; } = target;
+        public string Reason { get; } = reason;
+    }
+
+    public sealed class PlayerReportedCheaterEventArgs(LabApi.Features.Wrappers.Player player, LabApi.Features.Wrappers.Player target, string reason)
+    {
+        public LabApi.Features.Wrappers.Player Player { get; } = player;
+        public LabApi.Features.Wrappers.Player Target { get; } = target;
+        public string Reason { get; } = reason;
+    }
+}
+
+namespace LabApi.Events.Handlers
+{
+    public static class PlayerEvents
+    {
+        public static event Action<LabApi.Events.Arguments.PlayerEvents.PlayerReportedPlayerEventArgs>? ReportedPlayer;
+        public static event Action<LabApi.Events.Arguments.PlayerEvents.PlayerReportedCheaterEventArgs>? ReportedCheater;
+        public static void RaiseReportedPlayer(LabApi.Features.Wrappers.Player player, LabApi.Features.Wrappers.Player target, string reason)
+            => ReportedPlayer?.Invoke(new(player, target, reason));
+        public static void RaiseReportedCheater(LabApi.Features.Wrappers.Player player, LabApi.Features.Wrappers.Player target, string reason)
+            => ReportedCheater?.Invoke(new(player, target, reason));
+    }
+}

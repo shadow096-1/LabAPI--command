@@ -1,6 +1,7 @@
 using CommandSystem;
 using LabApi.Features.Console;
 using LabApi.Features.Wrappers;
+using LabApi.Events.Handlers;
 using PlayerRoles;
 using SLTranslateCN;
 using SLTranslateCN.Commands;
@@ -115,7 +116,21 @@ admin.RemoteAdminAccess = false;
 plugin.Config.QqBotApiUrl = "file:///tmp/untrusted";
 Check(!commands[2].Execute(inputArgs, sender, out response) && response == "发送失败。" && forwarded.Count == 1,
     "Invalid API URL is rejected without a request");
+plugin.Config.QqBotApiUrl = "http://127.0.0.1:3000";
+enemy.DisplayName = "被举报玩家";
+PlayerEvents.RaiseReportedPlayer(sender, enemy, "违规原因");
+Check(forwarded.Count == 2 && forwarded.Last().Body.Contains("被举报玩家") && forwarded.Last().Body.Contains("违规原因"),
+    "Player-list report forwards target and reason when no admin is online");
+PlayerEvents.RaiseReportedCheater(sender, enemy, "作弊原因");
+Check(forwarded.Count == 3 && forwarded.Last().Body.Contains("作弊举报") && forwarded.Last().Body.Contains("作弊原因"),
+    "Player-list cheat report reaches QQ bot");
+admin.RemoteAdminAccess = true;
+PlayerEvents.RaiseReportedPlayer(sender, enemy, "管理员在线");
+Check(forwarded.Count == 3, "Player-list reports are not forwarded when admin is online");
+admin.RemoteAdminAccess = false;
 plugin.Config.QqReportEnabled = false;
+PlayerEvents.RaiseReportedPlayer(sender, enemy, "转发关闭");
+Check(forwarded.Count == 3, "Native report hook respects disabled forwarding");
 ResetMessages();
 
 ResetMessages();
@@ -129,6 +144,8 @@ commands[0].Execute(inputArgs, sender, out _);
 Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=600><size=24>"), "Hint placement can be tuned for client display");
 ResetMessages();
 plugin.Disable();
+PlayerEvents.RaiseReportedPlayer(sender, enemy, "插件停用");
+Check(forwarded.Count == 3, "Native report hooks are removed on disable");
 foreach (var command in commands)
     Check(!command.Execute(inputArgs, sender, out _), command.Command + " rejects after disable");
 Check(Player.ReadyList.All(p => p.Broadcasts.Count == 0 && p.Hints.Count == 0) && Logger.Messages.Count == 0, "Disabled commands produce no output");
