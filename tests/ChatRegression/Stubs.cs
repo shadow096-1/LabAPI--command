@@ -32,7 +32,7 @@ namespace LabApi.Features
 {
     public static class LabApiProperties
     {
-        public const string CompiledVersion = "1.1.5";
+        public const string CompiledVersion = "1.1.7";
     }
 }
 

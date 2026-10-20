@@ -21,7 +21,7 @@ public sealed class AdminReportCommand : ICommand
             return false;
         }
 
-        if (!Player.TryGet(sender, out Player player))
+        if (!Player.TryGet(sender, out Player? player) || player is null)
         {
             response = "只有玩家可以使用 .ac。";
             return false;

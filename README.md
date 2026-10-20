@@ -4,6 +4,11 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 [`shadow096-1/SL-Translate-CN`](https://github.com/shadow096-1/SL-Translate-CN/tree/3d711586584d7bfd11a5cc4b7afc54c28d4dc48a)
 迁入此仓库，保留 `SLTranslateCN.dll`、插件名称及 `sl_translate_cn.yml` 配置文件名，方便已有服务器更新。
 
+## 下载
+
+当前插件版本：**1.0.2**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
+这是服务器端 LabAPI 插件，不是 LabAPI 框架本体。
+
 ## 命令
 
 - `.bc <内容>`：公屏聊天，发送给已就绪玩家。
@@ -15,10 +20,12 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 ## 构建
 
 需要 .NET SDK 8 或更高版本，以及与你的目标服务器匹配的 SCP:SL 游戏程序集。
-工程使用 `Northwood.LabAPI` 1.1.5；尚未验证其他游戏/LabAPI 版本。
+工程优先引用 `SL_REFERENCES` 中的 `LabApi.dll`；未提供时使用 `Northwood.LabAPI` 1.1.7。
+本次使用上传的真实服务器程序集（LabAPI 1.1.7.0）编译，0 错误、0 警告。
 
 将 `SL_REFERENCES` 指向服务器的 `SCPSL_Data/Managed` 目录，其中需要：
 
+- `LabApi.dll`（建议提供，确保与服务器版本一致）
 - `Assembly-CSharp.dll`
 - `Assembly-CSharp-firstpass.dll`
 - `CommandSystem.Core.dll`
@@ -29,13 +36,13 @@ Windows PowerShell：
 
 ```powershell
 $env:SL_REFERENCES = 'C:\SCPServer\SCPSL_Data\Managed'
-dotnet build SL-Translate-CN.sln -c Release
+dotnet build LabAPI--command.sln -c Release
 ```
 
 Linux：
 
 ```sh
-SL_REFERENCES=/path/to/server/SCPSL_Data/Managed dotnet build SL-Translate-CN.sln -c Release
+SL_REFERENCES=/path/to/server/SCPSL_Data/Managed dotnet build LabAPI--command.sln -c Release
 ```
 
 缺少引用时，构建会给出明确错误。程序集来自服务器，不存入本仓库。
@@ -43,7 +50,8 @@ SL_REFERENCES=/path/to/server/SCPSL_Data/Managed dotnet build SL-Translate-CN.sl
 
 ## 安装和配置
 
-将 `src/SLTranslateCN/bin/Release/net48/SLTranslateCN.dll` 放入服务器的
+可直接使用 [`dist/SLTranslateCN.dll`](dist/SLTranslateCN.dll)，或自行构建后取
+`src/SLTranslateCN/bin/Release/net48/SLTranslateCN.dll`，放入服务器的
 `LabAPI/plugins/<端口>` 或 `LabAPI/plugins/global`。更新时替换旧 DLL，不要同时加载两份插件。
 插件配置目录内的 `sl_translate_cn.yml` 支持：
 
@@ -69,7 +77,8 @@ dotnet run --project tests/ChatRegression/ChatRegression.csproj -c Release
 ```
 
 GitHub Actions 自动执行这组回归检查，覆盖启停、输入、消息路由、举报日志和配置时长。
-测试链接实际聊天源码，使用游戏/LabAPI 的测试替身；通过测试不代表通过真实服务器程序集的编译或游戏内验证。
-部署前仍需使用上述实际 DLL 构建，并在测试服务器核对三个命令。
+回归测试链接实际聊天源码，使用游戏/LabAPI 的测试替身。
+此外，`dist/SLTranslateCN.dll` 已通过上传的实际游戏程序集编译；目标框架为 .NET Framework 4.8，平台为 AnyCPU。
+尚未启动真实游戏服务器测试，请在服务器中核对 `.bc`、`.c`、`.ac` 的显示和接收范围。
 
-`legacy/ScpAutoHeal.cs` 是原仓库中独立的 Exiled 自动回血代码，原样留存，不参与 LabAPI 聊天插件编译，也未移植到 LabAPI。
+不参与本插件的旧 Exiled 自动回血代码已从当前分支清理；如需恢复，可查看提交 `52562da718f4c8553c7d7960397131972a603e42`。
