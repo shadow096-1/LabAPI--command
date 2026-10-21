@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using LabApi.Features.Console;
 using LabApi.Features.Wrappers;
 using PlayerRoles;
@@ -13,6 +15,10 @@ public static class ChatService
     private const string PublicPrefix = "<color=#00D5FF>[公屏]</color>";
     private const string FactionPrefix = "<color=#8BFF7A>[阵营]</color>";
     private const string AdminPrefix = "<color=#FF6969>[举报]</color>";
+    private const int MaxNameWidth = 20;
+    private const int MaxLineWidth = 80;
+    private static readonly Regex RichText = new("<[^>]*>", RegexOptions.Compiled);
+    private static readonly ChatHintBridge ChatHints = new();
 
     public static bool IsEnabled => Plugin.Instance?.Config?.IsEnabled == true;
 
@@ -30,10 +36,11 @@ public static class ChatService
     {
         string faction = GetFactionName(player.Faction);
         string state = player.IsAlive ? "存活" : "死亡/观战";
-        string role = GetRoleName(player.Role);
-        string name = Sanitize(player.DisplayName ?? player.Nickname ?? "未知玩家");
+        // DisplayName can be decorated by other plugins; use the account nickname
+        // so level prefixes and rich-text fragments do not leak into the chat line.
+        string name = Fit(Sanitize(RichText.Replace(player.Nickname ?? "未知玩家", "")), MaxNameWidth);
 
-        return $"{name} <color=#FFD36E>[{faction}｜{state}｜{role}]</color>";
+        return $"{name} <color=#FFD36E>[{faction}｜{state}]</color>";
     }
 
     public static string Sanitize(string value)
@@ -51,7 +58,7 @@ public static class ChatService
 
     public static void SendPublic(Player sender, string text)
     {
-        string message = $"{PublicPrefix} {FormatSender(sender)}：{Sanitize(text)}";
+        string message = FormatLine(PublicPrefix, sender, text);
         ushort duration = Plugin.Instance?.Config?.PublicBroadcastDuration ?? 10;
 
         foreach (Player player in Player.ReadyList.Where(player => player.IsReady))
@@ -64,7 +71,7 @@ public static class ChatService
 
     public static int SendFaction(Player sender, string text)
     {
-        string message = $"{FactionPrefix} {FormatSender(sender)}：{Sanitize(text)}";
+        string message = FormatLine(FactionPrefix, sender, text);
         ushort duration = Plugin.Instance?.Config?.FactionBroadcastDuration ?? 10;
         Faction faction = sender.Faction;
         int recipients = 0;
@@ -81,7 +88,7 @@ public static class ChatService
 
     public static bool SendAdminReport(Player sender, string text)
     {
-        string message = $"{AdminPrefix} {FormatSender(sender)}：{Sanitize(text)}";
+        string message = FormatLine(AdminPrefix, sender, text);
         ushort duration = Plugin.Instance?.Config?.AdminReportBroadcastDuration ?? 10;
         List<Player> admins = Player.ReadyList
             .Where(player => player.IsReady && player.RemoteAdminAccess)
@@ -147,13 +154,48 @@ public static class ChatService
 
         ChatConfig? config = Plugin.Instance?.Config;
         int offset = Math.Max(0, Math.Min(700, config?.HintVerticalOffset ?? 500));
-        int size = Math.Max(16, Math.Min(40, config?.HintFontSize ?? 28));
-        player.SendHint($"<align=left><voffset={offset}><size={size}>{message}</size></voffset></align>", duration);
+        int size = Math.Max(14, Math.Min(40, config?.HintFontSize ?? 18));
+        // The hint compositor keeps our line separate from other plugins' hints
+        // and retains it for the configured lifetime. Native hints are a fallback.
+        if (!ChatHints.Show(player, message, size, duration))
+            player.SendHint($"<align=left><voffset={offset}><size={size}>{message}</size></voffset></align>", duration);
 
         if (Plugin.Instance?.Config?.SendConsoleCopy ?? true)
         {
             player.SendConsoleMessage(StripRichText(message), consoleColor);
         }
+    }
+
+    private static string FormatLine(string prefix, Player sender, string content)
+    {
+        string heading = $"{prefix} {FormatSender(sender)}：";
+        int available = Math.Max(8, MaxLineWidth - DisplayWidth(StripRichText(heading)));
+        return heading + Fit(Sanitize(content), available);
+    }
+
+    private static string Fit(string value, int width)
+    {
+        if (DisplayWidth(value) <= width) return value;
+        var result = new StringBuilder();
+        var parts = StringInfo.GetTextElementEnumerator(value);
+        int used = 0;
+        while (parts.MoveNext())
+        {
+            string element = parts.GetTextElement();
+            int extra = DisplayWidth(element);
+            if (used + extra + 1 > width) break;
+            result.Append(element);
+            used += extra;
+        }
+        return result.Append('…').ToString();
+    }
+
+    private static int DisplayWidth(string value)
+    {
+        int width = 0;
+        foreach (char ch in value)
+            width += ch >= 0x2E80 ? 2 : 1;
+        return width;
     }
 
     private static string StripRichText(string value)
