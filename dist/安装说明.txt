@@ -1,0 +1,20 @@
+SCP:SL LabAPI 插件更新（适配 LabAPI 1.1.7）
+
+1. 停止服务器。
+2. 将这四个 DLL 放到 LabAPI/plugins/<端口>/ 或 LabAPI/plugins/global/，替换相同名字的旧 DLL；同一个插件不要在两个目录各放一份。
+3. 重启服务器。必须同时更新 PlayerLevels.dll、SLTranslateCN.dll 和 ScpStatus.dll，三者才会共用一份提示显示。
+
+PlayerLevels.dll：玩家等级；自动生成 players.txt、multipliers.txt；旧 players.json 首次启动自动迁移并保留。
+SLTranslateCN.dll：.bc 公屏、.c 阵营、.ac 举报；.bc/.c 尊重服务器禁言，.ac 仍可使用。
+ScpStatus.dll：SCP 静止回血、管理员固定血量、队友状态。
+UnlimitedSpecialItems.dll：默认只解除特殊武器单独携带上限。
+
+编辑玩家等级和倍数 TXT 后，在远程管理面板输入 levelreload。
+
+游戏自带物品容量在 %APPDATA%\SCP Secret Laboratory\config\<端口>\config_gameplay.txt 修改：
+limit_category_firearm: 8
+limit_category_medical: 8
+limit_category_scpitem: 8
+每类最大仍受背包总计 8 格限制。游戏默认不读取特殊武器的该配置键，故由 UnlimitedSpecialItems.dll 处理。
+
+这些 DLL 已通过编译和单帧三栏提示的独立测试，仍需在实际游戏里确认 UI 位置与时长。

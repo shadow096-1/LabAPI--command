@@ -22,7 +22,7 @@ public sealed class PlayerLevelsPlugin : Plugin
     public override string Name => "PlayerLevels";
     public override string Description => "回合、撤离与敌对击杀经验；两行等级界面与管理员经验倍数";
     public override string Author => "Codex";
-    public override Version Version => new(1, 1, 0);
+    public override Version Version => new(1, 2, 0);
     public override Version RequiredApiVersion => new(LabApiProperties.CompiledVersion);
     public Config Config { get; private set; } = new();
 
@@ -71,6 +71,7 @@ public sealed class PlayerLevelsPlugin : Plugin
         _store = LevelStore.Load(_levelsPath, _multipliersPath);
         Instance = this;
         _running = true;
+        HudBus.Start(Config.HudLeadingLines);
         var generation = ++_loopGeneration;
         PlayerEvents.Spawned += OnSpawned;
         PlayerEvents.Left += OnLeft;
@@ -81,6 +82,7 @@ public sealed class PlayerLevelsPlugin : Plugin
         if (Round.IsRoundStarted && !Round.IsRoundEnded)
             foreach (var player in Player.ReadyList) MarkParticipating(player);
         Timing.RunCoroutine(RefreshHud(generation));
+        Timing.RunCoroutine(RenderHud(generation));
         Logger.Info($"等级插件已加载：{_store.Players.Count} 条玩家记录。");
     }
 
@@ -88,6 +90,7 @@ public sealed class PlayerLevelsPlugin : Plugin
     {
         _running = false;
         ++_loopGeneration;
+        HudBus.Stop();
         PlayerEvents.Spawned -= OnSpawned;
         PlayerEvents.Left -= OnLeft;
         PlayerEvents.Death -= OnDeath;
@@ -144,6 +147,7 @@ public sealed class PlayerLevelsPlugin : Plugin
     private void OnLeft(PlayerLeftEventArgs ev)
     {
         RemovePrefix(ev.Player);
+        HudBus.Forget(ev.Player);
         _sessionStarted.Remove(ev.Player.UserId);
         // A player who played and disconnected still earns the round points.
     }
@@ -268,6 +272,15 @@ public sealed class PlayerLevelsPlugin : Plugin
         }
     }
 
+    private IEnumerator<float> RenderHud(int generation)
+    {
+        while (_running && generation == _loopGeneration)
+        {
+            HudBus.Render();
+            yield return Timing.WaitForSeconds(0.5f);
+        }
+    }
+
     private static void RefreshPrefix(Player player, int level)
     {
         var current = player.DisplayName;
@@ -305,9 +318,8 @@ public sealed class PlayerLevelsPlugin : Plugin
         // The native renderer expands line spacing when voffset spans a newline.
         // Padding before the small HUD block moves both lines together instead.
         int size = Math.Max(10, Math.Min(28, Config.HudFontSize));
-        int padding = Math.Max(0, Math.Min(20, Config.HudLeadingLines));
-        player.SendHint(new string('\n', padding) + $"<align=center><size={size}>{text}</size></align>",
-            Math.Max(1.5f, Config.HudRefreshSeconds + 0.4f));
+        HudBus.TrySet(player, "levels", $"<size={size}>{text}</size>",
+            Math.Max(3f, Config.HudRefreshSeconds + 1f));
     }
 
     private static string EscapeText(string text) => (text ?? "")

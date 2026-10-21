@@ -1,18 +1,21 @@
-# 秘密实验室聊天插件
+# SCP:SL 服务器插件
 
 SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 [`shadow096-1/SL-Translate-CN`](https://github.com/shadow096-1/SL-Translate-CN/tree/3d711586584d7bfd11a5cc4b7afc54c28d4dc48a)
 迁入此仓库，保留 `SLTranslateCN.dll`、插件名称及 `sl_translate_cn.yml` 配置文件名，方便已有服务器更新。
 
-## 下载
+## 懒人下载
 
-当前插件版本：**1.1.0**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
-这是服务器端 LabAPI 插件，不是 LabAPI 框架本体。
+下载 [四个插件一包（平铺 ZIP）](dist/SCP-SL-Plugins-2026-10-22.zip)，停服后把里面的 DLL 替换到 `LabAPI/plugins/<端口>/` 或 `LabAPI/plugins/global/`，同名插件只放一份，再启动服务器。
 
-### 等级插件 PlayerLevels（独立插件）
+| 插件 | 单独下载 | 功能 |
+| --- | --- | --- |
+| 聊天 1.3.0 | [SLTranslateCN.dll](dist/SLTranslateCN.dll) | `.bc` 公屏、`.c` 阵营、`.ac` 举报；禁言玩家只能使用举报 |
+| 等级 1.2.0 | [PlayerLevels.dll](dist/PlayerLevels.dll) | 自动生成可编辑的等级、倍数 TXT；共用提示画面 |
+| SCP 状态 1.1.0 | [ScpStatus.dll](dist/ScpStatus.dll) | SCP 静止回血、右上角队友信息 |
+| 物品上限 1.1.0 | [UnlimitedSpecialItems.dll](dist/UnlimitedSpecialItems.dll) | 放宽特殊武器单独携带上限 |
 
-下载 **[PlayerLevels.dll](dist/PlayerLevels.dll)**，替换服务器原有的等级插件 DLL 后重启。首次启动会自动生成可编辑的 `players.txt`（等级与经验）和 `multipliers.txt`（经验倍数）；旧 `players.json` 自动迁移并保留备份。修改 TXT 后可在管理员面板输入 `levelreload`。详细操作见[三步安装说明](src/PlayerLevels/README.md)。聊天插件和等级插件分别安装，各自只放一份 DLL。
-
+**聊天、等级、SCP 状态需要同时换成这次的版本。** 等级插件统一发送画面，三种内容就不会互相顶掉。详细说明：[等级插件](src/PlayerLevels/README.md) · [SCP 状态](src/ScpStatus/README.md) · [物品上限](src/UnlimitedSpecialItems/README.md)。
 
 ## 命令
 
@@ -20,7 +23,7 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 - `.c <内容>`：阵营聊天，仅发送给同阵营的已就绪玩家。
 - `.ac <内容>`：举报，仅发送给已就绪且有 Remote Admin 访问权限的玩家，并记录到服务器日志；无人在线时记录日志；配置 QQ 机器人后自动转发到群并艾特指定 QQ。
 
-消息包含发送者阵营、存活状态及角色。`.bc`、`.c` 仅显示左上方小字；`.ac` 保留顶部大字，同时显示左上方小字，仅管理员接收。三种消息默认均为 10 秒，不做永久显示；可配置客户端控制台纯文本副本。
+聊天行只包含频道、昵称前六字（超出省略）和内容，不显示角色身份。`.bc`、`.c` 仅显示左上方小字；`.ac` 保留顶部大字，同时显示左上方小字，仅管理员接收。三种消息至少显示 10 秒，不做永久显示；可配置客户端控制台纯文本副本。
 
 ## 构建
 
@@ -66,7 +69,7 @@ public_broadcast_duration: 10
 faction_broadcast_duration: 10
 admin_report_broadcast_duration: 10
 hint_vertical_offset: 500
-hint_font_size: 28
+hint_font_size: 14
 send_console_copy: true
 qq_report_enabled: false
 qq_bot_api_url: "http://127.0.0.1:3000"
@@ -75,7 +78,7 @@ qq_report_group_id: 0
 qq_report_at_qq: 0
 ```
 
-旧配置不必删除，新增字段使用默认值。`hint_vertical_offset` 为相对原提示基线向上的偏移（0–700），`hint_font_size` 为字号（16–40）；不同分辨率可适当微调。原有 `*_broadcast_duration` 配置名保留兼容，公屏和阵营的值现在控制小字时长。
+旧配置不必删除，新增字段使用默认值。`hint_vertical_offset` 为相对原提示基线向上的偏移（0–700），`hint_font_size` 为字号（实际限制 10–16，旧配置中较大的值会自动压到 16）；不同分辨率可适当微调。原有 `*_broadcast_duration` 配置名保留兼容，公屏和阵营的值现在控制小字时长。
 
 命令发送回执仅显示“发送成功。”或“发送失败。”，不显示接收人数。阵营标签使用“混沌”，不显示“敌对”。
 
@@ -108,3 +111,15 @@ GitHub Actions 自动执行这组回归检查，覆盖启停、输入、消息�
 尚未启动真实游戏服务器测试，请在服务器中核对 `.bc`、`.c`、`.ac` 的显示和接收范围。
 
 不参与本插件的旧 Exiled 自动回血代码已从当前分支清理；如需恢复，可查看提交 `52562da718f4c8553c7d7960397131972a603e42`。
+
+## 游戏自带物品上限
+
+在 Windows 的 `%APPDATA%\\SCP Secret Laboratory\\config\\<端口>\\config_gameplay.txt` 中填写：
+
+```yaml
+limit_category_firearm: 8
+limit_category_medical: 8
+limit_category_scpitem: 8
+```
+
+这三项分别是枪械、药物和 SCP 物品上限，背包合计仍只有 8 格。这个游戏版本的特殊武器上限不读取同类配置项，因此由新版 `UnlimitedSpecialItems.dll` 解除。旧版上限 DLL 同时覆盖 SCP 物品配置，请务必替换。

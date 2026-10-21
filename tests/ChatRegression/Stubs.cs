@@ -76,6 +76,7 @@ namespace LabApi.Features.Wrappers
         public PlayerRoles.RoleTypeId Role { get; set; }
         public bool IsAlive { get; set; } = true;
         public bool IsReady { get; set; } = true;
+        public bool IsMuted { get; set; }
         public bool RemoteAdminAccess { get; set; }
         public string? DisplayName { get; set; } = "测试玩家";
         public string? Nickname { get; set; } = "测试玩家";
