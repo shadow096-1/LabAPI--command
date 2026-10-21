@@ -57,14 +57,23 @@ Check(ChatService.JoinArguments(default) == "", "Default arguments are safe");
 
 plugin.Config.PublicBroadcastDuration = 4;
 sender.Nickname = "name\n[FakeLog]";
+sender.DisplayName = "[Lv.99]<color=#fff>NotTheNickname</color>";
 var unsafeArgs = new ArraySegment<string>(new[] { "<size=999>hello</size>\n\u001b[31m" });
 Check(commands[0].Execute(unsafeArgs, sender, out string response) && response == "发送成功。", "Public response is status only");
 Check(Player.ReadyList.Where(p => p.IsReady).All(p => p.Hints.Count == 1 && p.Hints[0].Duration == 4), "Public delivery uses configured duration");
 Check(Player.ReadyList.All(p => p.Broadcasts.Count == 0), "Public chat has no large broadcast");
-Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=500><size=28>"), "Small chat text is left aligned and moved up");
+Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=500><size=18>"), "Small chat text is left aligned and uses a smaller font");
+Check(!sender.Hints.Single().Text.Contains("NotTheNickname") && !sender.Hints.Single().Text.Contains("[Lv.99]"), "Decorated display names never leak into chat");
+Check(!ChatService.FormatSender(sender).Contains("科学家"), "Chat sender metadata is compact");
 Check(notReady.Broadcasts.Count == 0 && notReady.Hints.Count == 0, "Unready players receive nothing");
 Check(!Logger.Messages.Single().Any(char.IsControl), "Log message and sender cannot inject control characters");
 Check(sender.ConsoleMessages.Single().Contains("‹size=999›") && !sender.ConsoleMessages.Single().Contains("<color="), "Console copies strip framework markup but preserve safe user text");
+sender.Nickname = "很长很长很长很长很长很长很长的玩家名字";
+ResetMessages();
+commands[0].Execute(new ArraySegment<string>(new[] { new string('文', 200) }), sender, out _);
+Check(sender.Hints.Single().Text.Contains("…") && !sender.Hints.Single().Text.Contains('\n') &&
+    !sender.Hints.Single().Text.Contains(new string('文', 100)), "Long nickname and text fit one line");
+sender.Nickname = "name";
 
 ResetMessages();
 plugin.Config.FactionBroadcastDuration = 3;
