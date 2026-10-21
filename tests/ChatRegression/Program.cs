@@ -71,7 +71,7 @@ Check(Player.ReadyList.All(p => p.Broadcasts.Count == 0), "Public chat has no la
 Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=500><size=14>"), "Small chat text is left aligned and uses a smaller font");
 Check(!sender.Hints.Single().Text.Contains("NotTheNickname") && !sender.Hints.Single().Text.Contains("[Lv.99]"), "Decorated display names never leak into chat");
 Check(!ChatService.FormatSender(sender).Contains("科学家") && !ChatService.FormatSender(sender).Contains("基金会") &&
-    sender.Hints.Single().Text.Contains("[公屏]name"), "Chat line contains only channel, nickname and message");
+    sender.Hints.Single().Text.Contains("[公屏]</color>name"), "Chat line contains only channel, nickname and message");
 Check(notReady.Broadcasts.Count == 0 && notReady.Hints.Count == 0, "Unready players receive nothing");
 Check(!Logger.Messages.Single().Any(char.IsControl), "Log message and sender cannot inject control characters");
 Check(sender.ConsoleMessages.Single().Contains("‹size=999›") && !sender.ConsoleMessages.Single().Contains("<color="), "Console copies strip framework markup but preserve safe user text");
