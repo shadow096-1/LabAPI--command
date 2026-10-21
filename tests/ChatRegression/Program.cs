@@ -45,6 +45,12 @@ plugin.Config.IsEnabled = false;
 foreach (var command in commands)
     Check(!command.Execute(inputArgs, sender, out _), command.Command + " respects disabled config");
 plugin.Config.IsEnabled = true;
+sender.IsMuted = true;
+Check(!commands[0].Execute(inputArgs, sender, out var mutedResponse) && mutedResponse.Contains("禁言"), "Muted player cannot use public chat");
+Check(!commands[1].Execute(inputArgs, sender, out mutedResponse) && mutedResponse.Contains("禁言"), "Muted player cannot use faction chat");
+Check(commands[2].Execute(inputArgs, sender, out _) && admin.Broadcasts.Count == 1, "Muted player can still report to admins");
+sender.IsMuted = false;
+ResetMessages();
 foreach (var command in commands)
 {
     Check(!command.Execute(inputArgs, new ConsoleSender(), out _), command.Command + " rejects non-player");
@@ -57,20 +63,31 @@ Check(ChatService.JoinArguments(default) == "", "Default arguments are safe");
 
 plugin.Config.PublicBroadcastDuration = 4;
 sender.Nickname = "name\n[FakeLog]";
+sender.DisplayName = "[Lv.99]<color=#fff>NotTheNickname</color>";
 var unsafeArgs = new ArraySegment<string>(new[] { "<size=999>hello</size>\n\u001b[31m" });
 Check(commands[0].Execute(unsafeArgs, sender, out string response) && response == "发送成功。", "Public response is status only");
-Check(Player.ReadyList.Where(p => p.IsReady).All(p => p.Hints.Count == 1 && p.Hints[0].Duration == 4), "Public delivery uses configured duration");
+Check(Player.ReadyList.Where(p => p.IsReady).All(p => p.Hints.Count == 1 && p.Hints[0].Duration >= 10), "Public delivery lasts at least ten seconds");
 Check(Player.ReadyList.All(p => p.Broadcasts.Count == 0), "Public chat has no large broadcast");
-Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=500><size=28>"), "Small chat text is left aligned and moved up");
+Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=500><size=14>"), "Small chat text is left aligned and uses a smaller font");
+Check(!sender.Hints.Single().Text.Contains("NotTheNickname") && !sender.Hints.Single().Text.Contains("[Lv.99]"), "Decorated display names never leak into chat");
+Check(!ChatService.FormatSender(sender).Contains("科学家") && !ChatService.FormatSender(sender).Contains("基金会") &&
+    sender.Hints.Single().Text.Contains("[公屏]name"), "Chat line contains only channel, nickname and message");
 Check(notReady.Broadcasts.Count == 0 && notReady.Hints.Count == 0, "Unready players receive nothing");
 Check(!Logger.Messages.Single().Any(char.IsControl), "Log message and sender cannot inject control characters");
 Check(sender.ConsoleMessages.Single().Contains("‹size=999›") && !sender.ConsoleMessages.Single().Contains("<color="), "Console copies strip framework markup but preserve safe user text");
+sender.Nickname = "很长很长很长很长很长很长很长的玩家名字";
+ResetMessages();
+commands[0].Execute(new ArraySegment<string>(new[] { new string('文', 200) }), sender, out _);
+Check(sender.Hints.Single().Text.Contains("…") && !sender.Hints.Single().Text.Contains('\n') &&
+    !sender.Hints.Single().Text.Contains(new string('文', 100)), "Long nickname and text fit one line");
+Check(ChatService.FormatSender(sender).StartsWith("很长很长很长…"), "Nickname uses the first six characters and ellipsis");
+sender.Nickname = "name";
 
 ResetMessages();
 plugin.Config.FactionBroadcastDuration = 3;
 Check(commands[1].Execute(inputArgs, sender, out response) && response == "发送成功。", "Faction response is status only");
 Check(sender.Hints.Count == 1 && ally.Hints.Count == 1 && enemy.Hints.Count == 0 && admin.Hints.Count == 0, "Faction messages stay in sender faction");
-Check(ally.Hints[0].Duration == 3, "Faction duration is configurable");
+Check(ally.Hints[0].Duration >= 10, "Faction chat lasts at least ten seconds");
 Check(Player.ReadyList.All(p => p.Broadcasts.Count == 0), "Faction chat has no large broadcast");
 
 ResetMessages();
@@ -141,7 +158,7 @@ ResetMessages();
 plugin.Config.HintVerticalOffset = 600;
 plugin.Config.HintFontSize = 24;
 commands[0].Execute(inputArgs, sender, out _);
-Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=600><size=24>"), "Hint placement can be tuned for client display");
+Check(sender.Hints.Single().Text.StartsWith("<align=left><voffset=600><size=16>"), "Hint placement is configurable and oversized legacy font settings are clamped");
 ResetMessages();
 plugin.Disable();
 PlayerEvents.RaiseReportedPlayer(sender, enemy, "插件停用");

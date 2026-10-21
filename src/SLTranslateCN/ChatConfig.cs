@@ -12,7 +12,7 @@ public sealed class ChatConfig
 
     public int HintVerticalOffset { get; set; } = 500;
 
-    public int HintFontSize { get; set; } = 28;
+    public int HintFontSize { get; set; } = 14;
 
     public bool SendConsoleCopy { get; set; } = true;
 

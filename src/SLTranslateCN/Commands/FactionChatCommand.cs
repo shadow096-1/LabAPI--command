@@ -27,6 +27,12 @@ public sealed class FactionChatCommand : ICommand
             return false;
         }
 
+        if (player.IsMuted)
+        {
+            response = "你已被服务器禁言，无法使用阵营聊天；仍可用 .ac 举报。";
+            return false;
+        }
+
         string text = ChatService.JoinArguments(arguments);
         if (string.IsNullOrWhiteSpace(text))
         {

@@ -10,6 +10,8 @@
 
 已有旧版 `players.json` 会自动转为两份 TXT；旧文件保留作备份。不要覆盖玩家的旧存档。需要修改经验倍数时，可直接编辑 `multipliers.txt` 并在管理员面板输入 `levelreload`。
 
+本版还统一管理原生提示通道：更新聊天插件 `SLTranslateCN.dll` 和 SCP 状态插件 `ScpStatus.dll` 后，三者会在同一画面同时显示。请同时替换这三个 DLL 的旧版本。
+
 ## 安装
 
 1. 将 `PlayerLevels.dll` 放入 LabAPI 的插件目录，替换旧版 DLL。
