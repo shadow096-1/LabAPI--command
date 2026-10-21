@@ -1,21 +1,12 @@
-# SCP:SL 服务器插件
+# SCP:SL 中文聊天插件
 
 SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 [`shadow096-1/SL-Translate-CN`](https://github.com/shadow096-1/SL-Translate-CN/tree/3d711586584d7bfd11a5cc4b7afc54c28d4dc48a)
 迁入此仓库，保留 `SLTranslateCN.dll`、插件名称及 `sl_translate_cn.yml` 配置文件名，方便已有服务器更新。
 
-## 懒人下载
+## 下载
 
-下载 [四个插件一包（平铺 ZIP）](dist/SCP-SL-Plugins-2026-10-22.zip)，停服后把里面的 DLL 替换到 `LabAPI/plugins/<端口>/` 或 `LabAPI/plugins/global/`，同名插件只放一份，再启动服务器。
-
-| 插件 | 单独下载 | 功能 |
-| --- | --- | --- |
-| 聊天 1.3.0 | [SLTranslateCN.dll](dist/SLTranslateCN.dll) | `.bc` 公屏、`.c` 阵营、`.ac` 举报；禁言玩家只能使用举报 |
-| 等级 1.2.0 | [PlayerLevels.dll](dist/PlayerLevels.dll) | 自动生成可编辑的等级、倍数 TXT；共用提示画面 |
-| SCP 状态 1.1.0 | [ScpStatus.dll](dist/ScpStatus.dll) | SCP 静止回血、右上角队友信息 |
-| 物品上限 1.1.0 | [UnlimitedSpecialItems.dll](dist/UnlimitedSpecialItems.dll) | 放宽特殊武器单独携带上限 |
-
-**聊天、等级、SCP 状态需要同时换成这次的版本。** 等级插件统一发送画面，三种内容就不会互相顶掉。详细说明：[等级插件](src/PlayerLevels/README.md) · [SCP 状态](src/ScpStatus/README.md) · [物品上限](src/UnlimitedSpecialItems/README.md)。
+下载 [SLTranslateCN.dll](dist/SLTranslateCN.dll)，停服后放入 `LabAPI/plugins/<端口>/` 或 `LabAPI/plugins/global/`，替换旧版，仅保留一份，然后启动服务器。当前版本：**1.3.0**。
 
 ## 命令
 
@@ -112,14 +103,3 @@ GitHub Actions 自动执行这组回归检查，覆盖启停、输入、消息�
 
 不参与本插件的旧 Exiled 自动回血代码已从当前分支清理；如需恢复，可查看提交 `52562da718f4c8553c7d7960397131972a603e42`。
 
-## 游戏自带物品上限
-
-在 Windows 的 `%APPDATA%\\SCP Secret Laboratory\\config\\<端口>\\config_gameplay.txt` 中填写：
-
-```yaml
-limit_category_firearm: 8
-limit_category_medical: 8
-limit_category_scpitem: 8
-```
-
-这三项分别是枪械、药物和 SCP 物品上限，背包合计仍只有 8 格。这个游戏版本的特殊武器上限不读取同类配置项，因此由新版 `UnlimitedSpecialItems.dll` 解除。旧版上限 DLL 同时覆盖 SCP 物品配置，请务必替换。
