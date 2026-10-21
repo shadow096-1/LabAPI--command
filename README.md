@@ -6,7 +6,7 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 
 ## 下载
 
-当前插件版本：**1.1.0**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
+当前插件版本：**1.2.0**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
 这是服务器端 LabAPI 插件，不是 LabAPI 框架本体。
 
 ## 命令
@@ -15,7 +15,7 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 - `.c <内容>`：阵营聊天，仅发送给同阵营的已就绪玩家。
 - `.ac <内容>`：举报，仅发送给已就绪且有 Remote Admin 访问权限的玩家，并记录到服务器日志；无人在线时记录日志；配置 QQ 机器人后自动转发到群并艾特指定 QQ。
 
-消息包含发送者阵营、存活状态及角色。`.bc`、`.c` 仅显示左上方小字；`.ac` 保留顶部大字，同时显示左上方小字，仅管理员接收。三种消息默认均为 10 秒，不做永久显示；可配置客户端控制台纯文本副本。
+消息包含发送者阵营及存活状态。聊天行采用原始昵称，过长时省略昵称和正文，保持单行。`.bc`、`.c` 仅显示左上方小字；`.ac` 保留顶部大字，同时显示左上方小字，仅管理员接收。三种消息默认均为 10 秒，不做永久显示；可配置客户端控制台纯文本副本。
 
 ## 构建
 
@@ -61,7 +61,7 @@ public_broadcast_duration: 10
 faction_broadcast_duration: 10
 admin_report_broadcast_duration: 10
 hint_vertical_offset: 500
-hint_font_size: 28
+hint_font_size: 18
 send_console_copy: true
 qq_report_enabled: false
 qq_bot_api_url: "http://127.0.0.1:3000"
@@ -70,7 +70,7 @@ qq_report_group_id: 0
 qq_report_at_qq: 0
 ```
 
-旧配置不必删除，新增字段使用默认值。`hint_vertical_offset` 为相对原提示基线向上的偏移（0–700），`hint_font_size` 为字号（16–40）；不同分辨率可适当微调。原有 `*_broadcast_duration` 配置名保留兼容，公屏和阵营的值现在控制小字时长。
+旧配置不必删除。如果已有配置仍设置 `hint_font_size: 28`，请手动改为 `18`。`hint_vertical_offset` 为原生提示相对基线向上的偏移（0–700），`hint_font_size` 为字号（14–40）；不同分辨率可适当微调。原有 `*_broadcast_duration` 配置名保留兼容，公屏和阵营的值现在控制小字时长。安装 HintServiceMeow 后聊天行由独立提示层显示，不易被其他提示提前覆盖；未安装时沿用游戏原生提示。
 
 命令发送回执仅显示“发送成功。”或“发送失败。”，不显示接收人数。阵营标签使用“混沌”，不显示“敌对”。
 
@@ -84,6 +84,8 @@ qq_report_at_qq: 0
 
 ## 本次修正
 
+- 使用原始昵称，避免其他插件的等级前缀和富文本代码混入聊天行；昵称与正文过长时省略，默认字号调为 18。
+- 检测到 HintServiceMeow 时使用独立提示层保持配置的时长；未安装时保留原生提示。
 - 顶部大字仅用于 `.ac`；小字改为左对齐并上移，举报保持默认 10 秒。
 
 - 补齐游戏程序集引用及缺失依赖提示，增加 .NET Framework 4.8 参考程序集包。
