@@ -9,6 +9,11 @@ SCP: Secret Laboratory 的 LabAPI 中文聊天插件。代码从
 当前插件版本：**1.1.0**。下载 [`SLTranslateCN.dll`](dist/SLTranslateCN.dll) 后点击 GitHub 文件页的下载按钮保存二进制文件。
 这是服务器端 LabAPI 插件，不是 LabAPI 框架本体。
 
+### 等级插件 PlayerLevels（独立插件）
+
+下载 **[PlayerLevels.dll](dist/PlayerLevels.dll)**，替换服务器原有的等级插件 DLL 后重启。首次启动会自动生成可编辑的 `players.txt`（等级与经验）和 `multipliers.txt`（经验倍数）；旧 `players.json` 自动迁移并保留备份。修改 TXT 后可在管理员面板输入 `levelreload`。详细操作见[三步安装说明](src/PlayerLevels/README.md)。聊天插件和等级插件分别安装，各自只放一份 DLL。
+
+
 ## 命令
 
 - `.bc <内容>`：公屏聊天，发送给已就绪玩家。
